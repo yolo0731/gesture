@@ -29,7 +29,7 @@ conda activate gesture
 
 - 也可以使用 pip 安装（可选）：`pip install -r requirements.txt`
 
-注意：动态/手写识别需要加载本地模型文件（较大，默认被 .gitignore 忽略，不随仓库提交）。见“模型文件”一节。
+注意：动态/手写识别需要加载本地模型文件。本仓库已随附 `models/` 目录中的预训练权重；数据集将由训练脚本自动下载到 `data/` 目录（无需手动准备）。详见“模型与数据”一节。
 
 ## 快速上手
 
@@ -65,21 +65,29 @@ python scripts/detect_and_update_camera_index.py
 - 指定扫描上限：`--max 20`
 - 跳过探测，强制使用某索引：`--force 1`
 
-## 模型文件
+## 模型与数据
 
-以下模型目录/文件较大，已被 `.gitignore` 忽略，不会上传到 GitHub。请在本地放置到 `models/` 目录：
+本仓库已经包含 `models/` 目录下的预训练模型，直接运行即可使用；`data/` 目录用于缓存数据集，训练脚本会在首次运行时自动下载与创建（无需手工下载）。
 
-- 手写字母（Keras）：`models/action.h5_3/`（SavedModel 目录）
-- 动态手势（Keras）：`models/CSRN_Model_2/`（SavedModel 目录）
-- 手写数字（PyTorch）：`models/MNIST1.pth`
-- 手写字母（PyTorch）：`models/EMNIST2_5.18.pth`
+已随仓库提供的模型列表：
 
-若缺少以上文件，对应功能会无法加载模型或识别失败。
+- 手写字母轨迹（Keras SavedModel）：`models/action.h5_3/`
+- 动态手势（Keras SavedModel）：`models/CSRN_Model_2/`
+- 手写数字（PyTorch 权重）：`models/MNIST1.pth`
+- 手写字母（PyTorch 权重）：`models/EMNIST2_5.18.pth`
 
-### 从零开始如何获取这些大文件
+两种使用方式：
 
-- 数据集目录 `data/`：由 torchvision 在训练阶段自动创建并下载，或手动放置。
-- 模型目录 `models/`：手动放置训练得到或下载的权重文件/目录。
+1) 使用随附的本地模型（零配置）
+- 直接 `python run.py` 启动；界面内相应功能将从 `models/` 加载。无须准备数据集。
+
+2) 自己训练并替换/复现模型（推荐了解流程）
+- 见下文“从零开始训练”小节；训练脚本会自动在 `data/` 下下载并缓存 MNIST/EMNIST 等数据集。
+
+### 从零开始训练（自动下载数据）
+
+- 数据集目录 `data/`：由 `torchvision.datasets` 在训练时自动创建并下载，也可手动放置。
+- 模型目录 `models/`：用于保存训练得到的权重文件/目录。
 
 推荐使用仓库内训练脚本在本地快速复现（无需提前准备 `data/`）：
 
@@ -106,7 +114,7 @@ mkdir -p models
 mv EMNIST2.pth models/EMNIST2_5.18.pth
 ```
 
-运行上述脚本时，`torchvision.datasets` 会自动在本地创建并缓存数据集到 `data/` 目录：
+运行上述脚本时，`torchvision.datasets` 会自动在本地创建并缓存数据集到 `data/` 目录（首次运行自动下载）：
 
 - `data/MNIST/`（MNIST 数据集）
 - `data/EMNIST/`（EMNIST Letters 数据集）
@@ -178,7 +186,7 @@ mv EMNIST2.pth models/EMNIST2_5.18.pth
   - `scripts/collect_sequences.py`（采集 Mediapipe 手部关键点序列）
   - `scripts/train_sequence_classifier.py`（训练并导出 Keras SavedModel）
 
-数据集与模型目录默认忽略：`data/`、`models/`（含 SavedModel/权重文件）等。
+数据集目录默认忽略：`data/`（含下载缓存等）。`models/` 现已纳入版本控制，便于开箱即用。
 
 附：关键点可视化 Demo：
 ```

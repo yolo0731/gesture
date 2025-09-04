@@ -129,16 +129,14 @@ dmypy.json
 .pyre/
 
 # Project specific
-# Large model files
-*.pth
-*.h5
-*.pkl
-*.joblib
-*.model
-# Models (SavedModel directories and weights)
-models/
+# Large model files (allow tracking under models/)
+# If you want to keep other weight artifacts ignored, list them specifically.
+# Note: models/ is now tracked to share pretrained weights.
+# *.pkl
+# *.joblib
+# *.model
 
-# Large datasets
+# Large datasets (remain ignored; will be auto-downloaded by scripts)
 data/
 datasets/
 
