@@ -204,3 +204,6 @@ __pycache__/
 
 # Local-only documentation
 AGENTS.md
+
+# Local documents
+paper/

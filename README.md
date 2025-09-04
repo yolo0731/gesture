@@ -40,10 +40,7 @@ conda activate gesture
 python run.py
 ```
 
-方式B（使用包运行）：
-```
-python -m gesture_app
-```
+（模块运行方式已合并至 run.py，推荐直接使用 run.py）
 
 - 窗口内按钮功能：
   - 1. 手写数字识别：空中书写数字，实时识别与显示
@@ -59,7 +56,7 @@ python -m gesture_app
 - 基于 MediaPipe Hands 关键点，无需训练模型；通过食指 PIP(6)→TIP(8) 向量判断方向，并用滑动窗口去抖动。
 - 使用方式：
   - 交互界面：点击“7.手指指向识别”。对准摄像头伸出食指，轻微改变指尖朝向，上/下/左/右将叠加显示，并写入右侧“识别结果”。按键盘 `q` 退出。
-  - Demo：`python -m gesture_app.demos.direction_gesture`
+  - Demo：`PYTHONPATH=src python -m demos.direction_gesture`
   - 摄像头索引异常时，先运行：`python scripts/detect_and_update_camera_index.py --dry-run`
 
 2) 摄像头索引适配（可选）：
@@ -104,23 +101,18 @@ python scripts/detect_and_update_camera_index.py
 
 ```
 conda activate gesture  # 或已准备好的 Python 环境
-python gesture_app/cnntrain_mnist.py
+PYTHONPATH=src python -m ml.cnntrain_mnist
 
-# 训练完成后会在当前目录生成 MNIST1.pth，将其放入 models/
-mkdir -p models
-mv MNIST1.pth models/
+# 训练完成后会自动保存到 models/MNIST1.pth
 ```
 
 2) 训练并生成字母识别模型（EMNIST Letters，PyTorch）
 
 ```
 conda activate gesture
-python gesture_app/duan_validation_2.py
+PYTHONPATH=src python -m ml.duan_validation_2
 
-# 训练完成后会在当前目录生成 EMNIST2.pth（state_dict），
-# 本项目推理代码期望文件名为 EMNIST2_5.18.pth，可直接重命名后放入 models/
-mkdir -p models
-mv EMNIST2.pth models/EMNIST2_5.18.pth
+# 训练完成后会自动保存到 models/EMNIST2_5.18.pth（state_dict）
 ```
 
 运行上述脚本时，`torchvision.datasets` 会自动在本地创建并缓存数据集到 `data/` 目录（首次运行自动下载）：
@@ -173,39 +165,188 @@ mv EMNIST2.pth models/EMNIST2_5.18.pth
 - （可选）`models/action.h5_3/` SavedModel 目录
 - （可选）`models/CSRN_Model_2/` SavedModel 目录
 
-## 目录说明（清理后）
+## 目录说明（src 布局）
 
-- 核心交互与 UI（包内）：
-  - `gesture_app/jiemianshixian.py`（应用窗口）
-  - `gesture_app/interaction_6.py`、`gesture_app/ui/interaction_6.ui`
-  - 模块启动：`python -m gesture_app`
-- 手写/手势模块（包内）：
-  - `gesture_app/written_number.py`、`gesture_app/written_letter.py`
-  - `gesture_app/number_gesture.py`、`gesture_app/letter_gesture.py`
-  - `gesture_app/direction_gesture.py`（食指指向：上/下/左/右）
-  - `gesture_app/HandTrackingModule.py`、`gesture_app/HandTrackingModule_letter.py`
-  - `gesture_app/letter_interpre.py`、`gesture_app/Finger.py`、`gesture_app/Landmark.py`、`gesture_app/definition.py`
-- 深度学习（包内）：
-  - `gesture_app/cnntrain_mnist.py`（数字模型结构/训练）
-  - `gesture_app/duan_validation_2.py`（字母模型结构/训练）
-- 动态手势：
-  - `dg_prediction_CSRN.py`
-- 脚本与工具：
-  - `scripts/detect_and_update_camera_index.py`
-  - `scripts/test_camera.py`（摄像头可用性测试）
-  - `scripts/collect_sequences.py`（采集 Mediapipe 手部关键点序列）
-  - `scripts/train_sequence_classifier.py`（训练并导出 Keras SavedModel）
+- 源代码：`src/`
+  - UI：`ui/main_window.py`（原 `jiemianshixian.py`），`ui/resources/interaction.ui`，`ui/interaction.py`
+  - 识别：`recognition/`（手写与静态/动态识别模块）
+  - 跟踪：`tracking/`（Mediapipe 封装与结构体）
+  - 机器学习：`ml/`（训练脚本与动态手势预测）
+  - 工具：`utils/paths.py`
+  - 演示：`demos/`（方向/关键点）
+- 入口：`run.py`（会自动引入 `src/` 并启动 UI）
+- 脚本与工具：`scripts/`（摄像头检测、采集、训练）
+- 模型：`models/`（权重与 SavedModel 目录）
+- 数据：`data/`（由脚本自动下载/缓存）
 
 数据集目录默认忽略：`data/`（含下载缓存等）。`models/` 现已纳入版本控制，便于开箱即用。
 
+### 项目目录树
+
+```
+gesture/
+├── README.md
+├── requirements.txt
+├── environment.yml
+├── environment.gpu.yml
+├── run.py
+│
+├── src/
+│   ├── （入口已合并到 run.py）
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   ├── main_window.py
+│   │   ├── interaction.py
+│   │   └── resources/
+│   │       └── interaction.ui
+│   │
+│   ├── recognition/
+│   │   ├── __init__.py
+│   │   ├── written_number.py
+│   │   ├── written_letter.py
+│   │   ├── number_gesture.py
+│   │   ├── letter_gesture.py
+│   │   ├── direction_gesture.py
+│   │   ├── number_rec.py
+│   │   ├── letter_rec.py
+│   │   └── letter_interpre.py
+│   │
+│   ├── tracking/
+│   │   ├── __init__.py
+│   │   ├── HandTrackingModule.py
+│   │   ├── HandTrackingModule_letter.py
+│   │   ├── Finger.py
+│   │   ├── Landmark.py
+│   │   └── definition.py
+│   │
+│   ├── ml/
+│   │   ├── __init__.py
+│   │   ├── cnntrain_mnist.py
+│   │   ├── duan_validation_2.py
+│   │   └── dg_prediction_CSRN.py
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── paths.py
+│   │
+│   └── demos/
+│       ├── __init__.py
+│       ├── direction_gesture.py
+│       └── hand_keypoints.py
+│
+├── scripts/
+│   ├── collect_sequences.py
+│   ├── detect_and_update_camera_index.py
+│   ├── test_camera.py
+│   └── train_sequence_classifier.py
+│
+├── data/
+│   ├── MNIST/
+│   └── EMNIST/
+│
+├── models/
+│   ├── MNIST1.pth
+│   ├── EMNIST2_5.18.pth
+│   ├── action.h5_3/
+│   └── CSRN_Model_2/
+│
+├── paper/
+│   └── 基于视觉信息的手势识别研究(1).pdf
+│
+└── 测试文件
+    ├── test.jpg
+    ├── test.txt
+    ├── test_letter.jpg
+    └── test_letter.txt
+```
+
+### 目录内容说明
+
+- 顶层
+  - `run.py`: 程序主入口，自动将 `src/` 加入 `sys.path` 并启动 UI。
+  - `requirements.txt` / `environment*.yml`: 运行与开发环境依赖清单。
+  - `README.md`: 使用说明、训练与目录结构文档。
+
+- `src/`（源码根目录）
+  - 入口逻辑已在 `run.py` 中实现，`src/` 下不再单独提供 `app_main.py`。
+  - `ui/`（界面层）
+    - `main_window.py`: 主窗口逻辑（原 `jiemianshixian.py`），负责加载 `.ui`、绑定按钮到功能函数。
+    - `interaction.py`: 由 Qt 生成的 UI Python 文件（可选，默认直接加载 `.ui`）。
+    - `resources/interaction.ui`: Qt Designer 生成的界面文件，推荐以此为准编辑 UI。
+  - `recognition/`（识别模块）
+    - `written_number.py` / `written_letter.py`: 空中手写数字/字母识别逻辑（含摄像头绘制、预处理与模型调用）。
+    - `number_gesture.py` / `letter_gesture.py`: 静态数字/字母手势识别（Mediapipe 关键点规则或序列模型）。
+    - `direction_gesture.py`: 食指方向（上/下/左/右）识别，基于 6→8 向量与滑动窗口稳定。
+    - `number_rec.py` / `letter_rec.py`: 统一的 UI 回调入口，调用对应的 `written_*`。
+    - `letter_interpre.py`: 字母手势解释器（将 21 个关键点状态映射到字母类别）。
+  - `tracking/`（手部跟踪与结构）
+    - `HandTrackingModule*.py`: Mediapipe Hands 的简单封装，提供检测、关键点坐标与手指抬起判断。
+    - `Finger.py` / `Landmark.py`: 结构体，存储手指各关节坐标。
+    - `definition.py`: 静态数字手势（ASL 数字）的规则映射与辅助函数。
+  - `ml/`（训练与模型调用）
+    - `cnntrain_mnist.py`: MNIST 数字识别训练脚本，输出 `models/MNIST1.pth`。
+    - `duan_validation_2.py`: EMNIST Letters 字母识别训练脚本，输出 `models/EMNIST2_5.18.pth`（state_dict）。
+    - `dg_prediction_CSRN.py`: 动态手势（Click/Stop/Rotate/No）序列模型的推理逻辑（加载 TF Keras 模型）。
+  - `utils/`
+    - `paths.py`: 统一的路径工具，自动定位项目根、`models/`、`data/` 与 UI 资源路径。
+  - `demos/`（演示）
+    - `hand_keypoints.py`: 实时手部关键点可视化。
+    - `direction_gesture.py`: 方向手势 Demo（与 UI 中“手指指向识别”一致）。
+
+### 模式映射（按钮 → 模块）
+
+- 1. 手写数字识别:
+  - 入口: `ui/main_window.py` → `recognition.number_rec.number_rec`
+  - 实现: `recognition/written_number.py`（摄像头画布、预处理、推理）
+  - 模型: `models/MNIST1.pth`
+- 2. 手写字母识别:
+  - 入口: `ui/main_window.py` → `recognition.letter_rec.letter_rec`
+  - 实现: `recognition/written_letter.py`
+  - 模型: `models/EMNIST2_5.18.pth`
+- 3. 数字手势识别（ASL 数字，静态）:
+  - 入口: `ui/main_window.py` → `recognition.number_gesture.number_gesture`
+  - 实现: Mediapipe Hands + `tracking/definition.py` 规则映射（无需模型）
+- 4. 字母手势识别（ASL 字母，静态）:
+  - 入口: `ui/main_window.py` → `recognition.letter_gesture.letter_gesture`
+  - 实现: Mediapipe Hands + `recognition/letter_interpre.py`
+- 5. 动态手势识别（Click/Stop/Rotate/No）:
+  - 入口: `ui/main_window.py` → `ml.dg_prediction_CSRN.CSRN`
+  - 模型: `models/CSRN_Model_2/` SavedModel 或 `models/CSRN_Model_2.h5`
+- 6. 动态字母手势（J/Z 轨迹）:
+  - 入口: `ui/main_window.py` → `recognition.letter_gesture.JZRec`
+  - 模型: `models/action.h5_3/` SavedModel 或 `models/action.h5_3.h5`
+- 7. 手指指向识别（上/下/左/右）:
+  - 入口: `ui/main_window.py` → `recognition.direction_gesture.direction_gesture`
+  - 实现: Mediapipe Hands + 6→8 向量方向判定（无需模型）
+
+- `scripts/`（脚本工具）
+  - `detect_and_update_camera_index.py`: 自动探测可用摄像头并批量替换代码中的固定索引（支持 `--dry-run`）。
+  - `test_camera.py`: 摄像头可用性测试。
+  - `collect_sequences.py` / `train_sequence_classifier.py`: 采集 Mediapipe 序列并训练 TF Keras 模型，导出 SavedModel。
+
+- `models/`（模型与权重）
+  - `MNIST1.pth`: 手写数字 PyTorch 模型（`written_number.py` 使用）。
+  - `EMNIST2_5.18.pth`: 手写字母 PyTorch 模型（`written_letter.py` 使用）。
+  - `action.h5_3/`: J/Z 轨迹的 TF Keras SavedModel 目录（含 `saved_model.pb` 与 `variables/`）。
+  - `CSRN_Model_2/`: 动态手势四分类的 TF Keras SavedModel 目录。
+  - 亦支持 `.h5` 单文件形式：放置为 `models/action.h5_3.h5` 或 `models/CSRN_Model_2.h5`。
+
+- `data/`（数据集缓存）
+  - 由 `torchvision.datasets` 或脚本首次运行时自动下载并创建，例如 `data/MNIST/`、`data/EMNIST/`。
+
+- 其他
+  - `paper/`: 本地文档（已在 `.gitignore` 忽略）。
+  - 测试图片与输出：`test.jpg`、`test_letter.jpg`、`test.txt`、`test_letter.txt`。
+
+
 附：关键点可视化 Demo：
 ```
-python -m gesture_app.demos.hand_keypoints
+PYTHONPATH=src python -m demos.hand_keypoints
 ```
 
 附：食指指向识别 Demo：
 ```
-python -m gesture_app.demos.direction_gesture
+PYTHONPATH=src python -m demos.direction_gesture
 ```
 
 ## 常见问题

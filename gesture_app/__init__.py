@@ -1,2 +1,0 @@
-"""Gesture App package."""
-
