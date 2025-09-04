@@ -52,6 +52,15 @@ python -m gesture_app
   - 4. 字母手势识别：对准摄像头做 ASL 字母手势
   - 5. 动态手势识别：Click/Stop/Rotate/No
   - 6. 动态字母手势：J/Z（轨迹识别）
+  - 7. 手指指向识别：食指指尖方向判定（上/下/左/右），按 q 退出
+
+### 手指指向识别（新功能）
+
+- 基于 MediaPipe Hands 关键点，无需训练模型；通过食指 PIP(6)→TIP(8) 向量判断方向，并用滑动窗口去抖动。
+- 使用方式：
+  - 交互界面：点击“7.手指指向识别”。对准摄像头伸出食指，轻微改变指尖朝向，上/下/左/右将叠加显示，并写入右侧“识别结果”。按键盘 `q` 退出。
+  - Demo：`python -m gesture_app.demos.direction_gesture`
+  - 摄像头索引异常时，先运行：`python scripts/detect_and_update_camera_index.py --dry-run`
 
 2) 摄像头索引适配（可选）：
 
@@ -173,6 +182,7 @@ mv EMNIST2.pth models/EMNIST2_5.18.pth
 - 手写/手势模块（包内）：
   - `gesture_app/written_number.py`、`gesture_app/written_letter.py`
   - `gesture_app/number_gesture.py`、`gesture_app/letter_gesture.py`
+  - `gesture_app/direction_gesture.py`（食指指向：上/下/左/右）
   - `gesture_app/HandTrackingModule.py`、`gesture_app/HandTrackingModule_letter.py`
   - `gesture_app/letter_interpre.py`、`gesture_app/Finger.py`、`gesture_app/Landmark.py`、`gesture_app/definition.py`
 - 深度学习（包内）：
@@ -191,6 +201,11 @@ mv EMNIST2.pth models/EMNIST2_5.18.pth
 附：关键点可视化 Demo：
 ```
 python -m gesture_app.demos.hand_keypoints
+```
+
+附：食指指向识别 Demo：
+```
+python -m gesture_app.demos.direction_gesture
 ```
 
 ## 常见问题

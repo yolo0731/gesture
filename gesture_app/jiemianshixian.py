@@ -29,6 +29,9 @@ class mainwindow(QMainWindow, Ui_Form):
         self.ui.number_gesture.clicked.connect(self.number_gesture)
         self.ui.letter_gesture.clicked.connect(self.letter_gesture)
         self.ui.number_rec_2.clicked.connect(self.dynamic_rec)
+        # 指向方向识别（上/下/左/右）
+        if hasattr(self.ui, 'direction_gesture'):
+            self.ui.direction_gesture.clicked.connect(self.direction_gesture)
         # 新增：动态字母手势 J/Z
         if hasattr(self.ui, 'letter_gesture_dynamic'):
             self.ui.letter_gesture_dynamic.clicked.connect(self.dynamic_letter_gesture)
@@ -67,6 +70,11 @@ class mainwindow(QMainWindow, Ui_Form):
         
     def clear_log(self):
         self.ui.textBrowser.clear()
+    
+    def direction_gesture(self):
+        # 集成方向识别模块（已迁入包内）
+        from .direction_gesture import direction_gesture
+        direction_gesture(self.ui)
     # def try1(self):
     #     if self.ui.letter_rec.isDown():
     #         letter_rec()

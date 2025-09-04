@@ -201,3 +201,6 @@ __pycache__/
 # System files
 *.bak
 *.backup
+
+# Local-only documentation
+AGENTS.md
